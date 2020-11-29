@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+
+		<title>  </title>
+
+		<style>
+
+            .report canvas {
+                height: 100%;
+                width: 100%;
+            }
+
+		</style>
+
+	</head>
+
+	<body>
+
+
+
+		<header>
+
+		</header>
+
+
+
+		<main>
+
+            <div class="report">
+
+                <canvas id="line-plot-example"></canvas>
+
+            </div>
+
+		</main>
+
+
+
+		<footer>
+
+        </footer>
+
+
+
+        <script>
+
+            var linePlot = document.querySelector('#line-plot-example');
+
+            var paddingLeft = 16, paddingTop = 16, paddingRight = 16, paddingBottom = 16;
+
+            function getDimensions(elem) {
+                return elem.getBoundingClientRect();
+            }
+
+            function minimax(a) {
+                return [Math.min(...a), Math.max(...a)]
+            }
+
+            function draw(canvas, x, y, xLabels, yLabels, xLegend, yLegend) {
+                minimaxX = minimax(x);
+                const minX = minimaxX[0], maxX = minimaxX[1]
+
+                minimaxY = minimax(y);
+                const minY = minimaxY[0], maxY = minimaxY[1];
+
+                var ctx = canvas.getContext('2d');
+
+                const a = (maxX - minX) / canvas.width;
+                const d = (minY - maxY) / canvas.height;
+
+                ctx.beginPath();
+                ctx.moveTo((x[0] - minX) / a, (y[0] - maxY) / d);
+                for (let i = 1; i < x.length; i++) {
+                    ctx.lineTo((x[i] - minX) / a, (y[i] - maxY) / d);
+                }
+                ctx.stroke();
+            }
+
+            function drawLines(canvas, u, axis, color, linewidth, linedash) {
+                minimaxU = minimax(u);
+                var minU = minimaxU[0], maxU = minimaxU[1]
+
+                var ctx = canvas.getContext('2d');
+
+                ctx.beginPath();
+                for (var i = 0; i < u.length; i++) {
+                    if (axis === 'x') {
+                        var a = (maxU - minU) / (canvas.width - (paddingLeft + paddingRight));
+                        
+                        var fromX = paddingLeft + (u[i] - minU) / a, fromY = canvas.height - paddingBottom;
+                        var toX = paddingLeft + (u[i] - minU) / a, toY = paddingTop;
+
+                        console.log(fromY);
+                        console.log(toY);
+
+                        ctx.moveTo(fromX, fromY);
+                        ctx.lineTo(toX, toY);
+                    } else if (axis === 'y') {
+                        var d = (minU - maxU) / (canvas.height - (paddingTop + paddingBottom));
+                        
+                        var fromX = paddingLeft, fromY = paddingTop + (u[i] - maxU) / d;
+                        var toX = canvas.width - paddingRight, toY = paddingTop + (u[i] - maxU) / d;
+
+                        console.log(fromX);
+                        console.log(toX);
+
+                        ctx.moveTo(fromX, fromY);
+                        ctx.lineTo(toX, toY);
+                    }
+                }
+                ctx.stroke();
+            }
+
+            function drawText(canvas, x, y, text, alignment) {
+                var ctx = canvas.getContext('2d');
+
+                ctx.textAlign = alignment;
+
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(-45);
+                ctx.fillText(text, 0, 0);
+                ctx.restore()
+            }
+
+            function drawAxis(canvas, u, labels, axis, color) {
+                minimaxU = minimax(u);
+                var minU = minimaxU[0], maxU = minimaxU[1]
+
+                if (axis === 'x') {
+                    drawLines(canvas, [0, 1], 'y');
+                } else if (axis === 'y') {
+                    drawLines(canvas, [0, 1], 'x');
+                }
+
+                var ctx = canvas.getContext('2d');
+
+                ctx.beginPath();
+                for (var i = 0; i < u.length; i++) {
+                    if (axis === 'x') {
+                        var a = (maxU - minU) / (canvas.width - (paddingLeft + paddingRight));
+                        var x = paddingLeft + (u[i] - minU) / a, y = canvas.height - paddingBottom
+                        ctx.moveTo(x, y + 4);
+                        ctx.lineTo(x, y - 4);
+
+                        drawText(canvas, x, y + 8, labels[i], 'end');
+                    } else if (axis === 'y') {
+                        var d = (minU - maxU) / (canvas.height - (paddingTop + paddingBottom));
+                        var x = paddingLeft, y = paddingTop + (u[i] - maxU) / d
+                        ctx.moveTo(x - 4, y);
+                        ctx.lineTo(x + 4, y);
+
+                        drawText(canvas, x - 8, y, labels[i], 'end');
+                    }
+                }
+                ctx.stroke();
+            }
+
+        </script>
+
+	</body>
+
+
+
+</html>
